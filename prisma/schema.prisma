@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName       String?
+  userName       String   @unique
+  email          String   @unique
+  role           UserRole
+  profilePicture String?
+  coverPicture   String?
+  password       String
+
+  userStatus UserStatus @default(ACTIVE)
+  isOnline   Boolean    @default(false)
+  lastSeen DateTime?
+  isDeleted  Boolean    @default(false)
+
+  otp        Int?
+  otpExpiry  DateTime?
+  isVerified Boolean   @default(false)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  Payment        Payment[]
+  ChatUser       ChatUser[]
+  Message        Message[]
+}
+
+
+
+model Payment {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId
+  amount          Float
+  stripePaymentId String
+  paymentStatus   PaymentStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relation
+  user       User?       @relation(fields: [userId], references: [id])
+}
+
+
+//  <---------------Chat--------------->
+
+model Chat {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String?
+  isGroup   Boolean    @default(false)
+  logo String?
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  users     ChatUser[]
+  messages  Message[]
+}
+
+
+model ChatUser {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String   @db.ObjectId
+  chatId   String   @db.ObjectId
+  role ChatGroupRole?
+
+  chat     Chat     @relation(fields: [chatId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId
+  senderId  String   @db.ObjectId
+  content   String
+  isRead Boolean @default(false)
+
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  sender    User     @relation(fields: [senderId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+  REFUNDED
+}
+
+
+enum ChatGroupRole {
+  ADMIN
+  MEMBER
+}
+
