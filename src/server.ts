@@ -11,10 +11,10 @@ function main() {
 
   // });
 
-  const server: Server = app.listen(Number(config.port), "10.0.10.84" ,() => {
+  const server: Server = app.listen(Number(config.port) ,() => {
     console.log(
       "Server is running on port ==>",
-      `http://10.0.10.84:${config.port}`
+      `http://localhost:${config.port}`
     );
   });
 

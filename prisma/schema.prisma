@@ -9,88 +9,63 @@ datasource db {
 
 model User {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  fullName       String?
-  userName       String   @unique
+  name           String
   email          String   @unique
   role           UserRole
   profilePicture String?
-  coverPicture   String?
   password       String
 
   userStatus UserStatus @default(ACTIVE)
-  isOnline   Boolean    @default(false)
-  lastSeen DateTime?
   isDeleted  Boolean    @default(false)
 
   otp        Int?
   otpExpiry  DateTime?
   isVerified Boolean   @default(false)
 
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-
-  Payment        Payment[]
-  ChatUser       ChatUser[]
-  Message        Message[]
-}
-
-
-
-model Payment {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String        @db.ObjectId
-  amount          Float
-  stripePaymentId String
-  paymentStatus   PaymentStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  //relation
-  user       User?       @relation(fields: [userId], references: [id])
-}
-
-
-//  <---------------Chat--------------->
-
-model Chat {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  name      String?
-  isGroup   Boolean    @default(false)
-  logo String?
-
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-
-  users     ChatUser[]
-  messages  Message[]
+  Note      Note[]
+  Category  Category[]
 }
 
+model Note {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorId    String   @db.ObjectId
+  categoryIds String[] @db.ObjectId
+  title       String
+  content     String
+  piority     Priority @default(MEDIUM)
+  isPinned    Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+  images      Image[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-model ChatUser {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId   String   @db.ObjectId
-  chatId   String   @db.ObjectId
-  role ChatGroupRole?
-
-  chat     Chat     @relation(fields: [chatId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  //relation
+  author     User       @relation(fields: [authorId], references: [id])
+  categories Category[] @relation(fields: [categoryIds], references: [id])
 }
 
-model Message {
+model Category {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  chatId    String   @db.ObjectId
-  senderId  String   @db.ObjectId
-  content   String
-  isRead Boolean @default(false)
-
-  chat      Chat     @relation(fields: [chatId], references: [id])
-  sender    User     @relation(fields: [senderId], references: [id])
+  name      String
+  color     String?  @default("#ffffff")
+  authorId  String   @db.ObjectId
+  noteIds   String[] @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // relation
+  author User   @relation(fields: [authorId], references: [id])
+  notes  Note[] @relation(fields: [noteIds], references: [id])
+}
+
+model Image {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  url        String
+  note       Note     @relation(fields: [noteId], references: [id])
+  noteId     String   @db.ObjectId
+  uploadedAt DateTime @default(now())
 }
 
 enum UserRole {
@@ -104,16 +79,9 @@ enum UserStatus {
   BLOCKED
 }
 
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  CANCELED
-  REFUNDED
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
-
-
-enum ChatGroupRole {
-  ADMIN
-  MEMBER
-}
-

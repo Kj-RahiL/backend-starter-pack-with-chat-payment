@@ -4,8 +4,7 @@ import { User } from "@prisma/client";
 
 export const initiateSuperAdmin = async () => {
   const payload: Partial<User> = {
-    fullName: "Super" as string,
-    userName: "Super_Admin" as string,
+    name: "Super_Admin" as string,
     email: "rahi@gmail.com" as string,
     password: "123456" as string,
     createdAt: new Date(),
@@ -33,8 +32,7 @@ export const initiateSuperAdmin = async () => {
 
     await TransactionClient.user.create({
       data: {
-        fullName: payload.fullName as string,
-        userName:payload.userName as string,
+        name: payload.name as string,
         email: payload.email as string,
         password: hashedPassword,
         role: "SUPER_ADMIN",
